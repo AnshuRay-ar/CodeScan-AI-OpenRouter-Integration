@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CodeScan AI — Futuristic Code Reviewer</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Cursor-reactive ambient background (decorative only) -->
+  <div class="ambient" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+  </div>
+
+  <!-- Interactive dot field -->
+  <canvas class="dot-field" id="dotField" aria-hidden="true"></canvas>
+
+  <!-- Scanline overlay (hidden by CSS, kept for compatibility) -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-name">CODE<span class="brand-accent">SCAN</span></span>
+      <span class="brand-tag">AI</span>
+    </div>
+    <div class="header-meta">
+      <span class="status-dot"></span>
+      <span class="status-text">ANSHU RAY LLM MODEL ONLINE</span>
+      <div class="header-divider"></div>
+      <select id="langSelect" class="lang-select" title="Select Language">
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+        <option value="go">Go</option>
+        <option value="rust">Rust</option>
+        <option value="php">PHP</option>
+        <option value="ruby">Ruby</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <main class="workspace">
+
+    <!-- Left: Code Editor Panel -->
+    <section class="panel panel-editor" id="panelEditor">
+
+      <div class="panel-header">
+        <span class="panel-title">editor.input</span>
+        <div class="panel-actions">
+          <button class="btn-icon" id="clearBtn" title="Clear Editor">✕ Clear</button>
+          <button class="btn-icon" id="sampleBtn" title="Load Sample">⟳ Sample</button>
+        </div>
+      </div>
+
+      <!-- Drag & drop overlay -->
+      <div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+        <div class="drop-overlay-inner">
+          <div class="drop-icon">🖼</div>
+          <p class="drop-title">Drop screenshot</p>
+          <p class="drop-sub">PNG · JPG · WEBP</p>
+        </div>
+      </div>
+
+      <div class="editor-wrapper">
+        <div class="line-numbers" id="lineNumbers">1</div>
+        <textarea
+          id="codeInput"
+          class="code-editor"
+          spellcheck="false"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          placeholder="// Paste your code here...&#10;// Tip: Ctrl+V also accepts screenshots, or drag & drop an image."
+        ></textarea>
+      </div>
+
+      <!-- Image attachment strip -->
+      <div class="attach-strip hidden" id="attachStrip">
+        <div class="attach-head">
+          <span class="attach-label">Attachments <span id="attachCount">0</span></span>
+          <button class="btn-icon" id="clearAttachBtn" title="Remove all images">✕ Clear all</button>
+        </div>
+        <div class="attach-list" id="attachList"></div>
+      </div>
+
+      <div class="editor-footer">
+        <div class="footer-left">
+          <span class="footer-info" id="lineCount">0 lines · 0 chars</span>
+          <button class="btn-attach" id="attachBtn" title="Attach screenshot (or just paste / drop)">
+            🖼 Image
+          </button>
+          <input type="file" id="fileInput" accept="image/*" multiple hidden />
+        </div>
+        <button class="btn-analyze" id="analyzeBtn">
+          <span class="btn-analyze-icon">▶</span>
+          <span id="analyzeLabel">ANALYZE CODE</span>
+          <span class="btn-analyze-glow"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Right: Review Output Panel -->
+    <section class="panel panel-review">
+      <div class="panel-header">
+        <span class="panel-title">ai.review_output</span>
+        <div class="panel-actions">
+          <button class="btn-icon" id="copyBtn" title="Copy Review">⎘ Copy</button>
+        </div>
+      </div>
+
+      <!-- Idle State -->
+      <div class="review-idle" id="reviewIdle">
+        <div class="idle-icon">⬡</div>
+        <p class="idle-title">AWAITING INPUT</p>
+        <p class="idle-sub">Paste your code <em>or a screenshot</em> and hit ANALYZE CODE to begin deep scan.</p>
+        <div class="idle-grid" aria-hidden="true"></div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="review-loading hidden" id="reviewLoading">
+        <div class="loader-ring"></div>
+        <p class="loader-label" id="loaderLabel">SCANNING CODE STRUCTURE…</p>
+        <div class="loader-bar-wrap">
+          <div class="loader-bar" id="loaderBar"></div>
+        </div>
+      </div>
+
+      <!-- Result State -->
+      <div class="review-result hidden" id="reviewResult">
+        <div class="result-meta" id="resultMeta"></div>
+        <div class="result-body" id="resultBody"></div>
+      </div>
+
+      <!-- Error State -->
+      <div class="review-error hidden" id="reviewError">
+        <div class="error-icon">⚠</div>
+        <p class="error-title">SCAN FAILED</p>
+        <p class="error-msg" id="errorMsg"></p>
+        <button class="btn-retry" id="retryBtn">↺ Retry</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="script.js"></script>
+
+  <!-- Cursor-reactive background, dot field + glass light (visual only; independent of script.js) -->
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var cv = document.getElementById('dotField'), ctx = cv.getContext('2d');
+      var GAP = 28, RADIUS = 200, W = 0, H = 0, dpr = 1;
+      var tx = -9999, ty = -9999, sx = -9999, sy = -9999;   // cursor target / smoothed
+      var bx = 0.5, by = 0.4, bTx = 0.5, bTy = 0.4;         // background parallax
+      var pulses = [];
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = window.innerWidth; H = window.innerHeight;
+        cv.width = W * dpr; cv.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function frame(t) {
+        // smooth follow
+        if (sx < -999) { sx = tx; sy = ty; }
+        sx += (tx - sx) * 0.16; sy += (ty - sy) * 0.16;
+        bx += (bTx - bx) * 0.07; by += (bTy - by) * 0.07;
+        root.style.setProperty('--mx', (bx * 2 - 1).toFixed(3));
+        root.style.setProperty('--my', (by * 2 - 1).toFixed(3));
+        root.style.setProperty('--cx', (bx * 100).toFixed(1) + '%');
+        root.style.setProperty('--cy', (by * 100).toFixed(1) + '%');
+
+        ctx.clearRect(0, 0, W, H);
+        pulses = pulses.filter(function (p) { return t - p.t < 1600; });
+
+        var cols = Math.ceil(W / GAP) + 1, rows = Math.ceil(H / GAP) + 1;
+        for (var j = 0; j < rows; j++) {
+          for (var i = 0; i < cols; i++) {
+            var x0 = i * GAP, y0 = j * GAP;
+            var dx = x0 - sx, dy = y0 - sy, d = Math.sqrt(dx * dx + dy * dy);
+            var k = d < RADIUS ? 1 - d / RADIUS : 0;
+            k = k * k * (3 - 2 * k);                       // smoothstep falloff
+
+            var rip = 0;
+            for (var n = 0; n < pulses.length; n++) {
+              var p = pulses[n], age = (t - p.t) / 1000;
+              var ddx = x0 - p.x, ddy = y0 - p.y;
+              var diff = Math.abs(Math.sqrt(ddx * ddx + ddy * ddy) - age * 460);
+              if (diff < 70) rip += (1 - diff / 70) * (1 - age / 1.6);
+            }
+
+            var wave = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(x0 * 0.011 + y0 * 0.009 + t * 0.0007);
+            var push = k * 16 * (d > 0 ? 1 / d : 0);       // dots bulge away from the cursor
+            var x = x0 + dx * push, y = y0 + dy * push;
+            var r = 1.1 + wave * 0.5 + k * 3.4 + rip * 2.6;
+            var hue = 138 + k * 34 + rip * 16 + wave * 8;    // deep green → mint → lime
+            var light = 50 + k * 30 + rip * 14;
+            var a = 0.2 + wave * 0.1 + k * 0.7 + rip * 0.5;
+
+            ctx.fillStyle = 'hsla(' + hue.toFixed(0) + ',92%,' + light.toFixed(0) + '%,' + Math.min(a, 1).toFixed(2) + ')';
+            ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+          }
+        }
+        if (!reduce) requestAnimationFrame(frame);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      if (reduce) { frame(0); return; }
+      requestAnimationFrame(frame);
+
+      window.addEventListener('pointermove', function (e) {
+        tx = e.clientX; ty = e.clientY;
+        bTx = e.clientX / W; bTy = e.clientY / H;
+      }, { passive: true });
+      window.addEventListener('pointerdown', function (e) {
+        pulses.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+      }, { passive: true });
+      document.addEventListener('mouseleave', function () { tx = ty = -9999; sx = sy = -9999; });
+
+      // Light that slides across each glass surface (fill + iridescent rim)
+      document.querySelectorAll('.header, .panel').forEach(function (el) {
+        el.addEventListener('pointermove', function (e) {
+          var b = el.getBoundingClientRect();
+          el.style.setProperty('--px', (e.clientX - b.left) + 'px');
+          el.style.setProperty('--py', (e.clientY - b.top) + 'px');
+        }, { passive: true });
+        el.addEventListener('pointerleave', function () {
+          el.style.removeProperty('--px'); el.style.removeProperty('--py');
+          el.style.removeProperty('--rx'); el.style.removeProperty('--ry');
+        });
+      });
+
+      // Gentle 3D tilt toward the pointer on the big panels
+      document.querySelectorAll('.panel').forEach(function (el) {
+        el.addEventListener('pointermove', function (e) {
+          if (e.pointerType === 'touch') return;
+          var b = el.getBoundingClientRect();
+          var nx = (e.clientX - b.left) / b.width - 0.5, ny = (e.clientY - b.top) / b.height - 0.5;
+          el.style.setProperty('--ry', (nx * 3).toFixed(2) + 'deg');
+          el.style.setProperty('--rx', (-ny * 3).toFixed(2) + 'deg');
+        }, { passive: true });
+      });
+
+      // Magnetic Analyze button
+      var mb = document.getElementById('analyzeBtn');
+      if (mb) {
+        mb.addEventListener('pointermove', function (e) {
+          var b = mb.getBoundingClientRect();
+          mb.style.setProperty('--bx', ((e.clientX - b.left - b.width / 2) * 0.12).toFixed(1) + 'px');
+          mb.style.setProperty('--by', ((e.clientY - b.top - b.height / 2) * 0.22).toFixed(1) + 'px');
+        }, { passive: true });
+        mb.addEventListener('pointerleave', function () {
+          mb.style.removeProperty('--bx'); mb.style.removeProperty('--by');
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
