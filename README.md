@@ -12,7 +12,7 @@ The application uses a Node.js backend and a web-based frontend, with OpenRouter
 
 🎥 **Watch the CodeScan AI Demonstration**
 
-[▶ Watch Project Demo]([YOUR_YOUTUBE_VIDEO_LINK_HERE](https://youtu.be/c8R_lVcfd1Q))
+[▶ Watch Project Demo](https://youtu.be/c8R_lVcfd1Q)
 
 The demonstration covers the application's interface, AI-powered code analysis, debugging assistance, and supported file and image inputs.
 
