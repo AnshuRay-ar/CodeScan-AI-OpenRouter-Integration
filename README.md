@@ -8,6 +8,14 @@ CodeScan AI is a web-based AI assistant designed to make code analysis easier. U
 
 The application uses a Node.js backend and a web-based frontend, with OpenRouter acting as the AI model gateway.
 
+## Project Demo
+
+🎥 **Watch the CodeScan AI Demonstration**
+
+[▶ Watch Project Demo](YOUR_YOUTUBE_VIDEO_LINK_HERE)
+
+The demonstration covers the application's interface, AI-powered code analysis, debugging assistance, and supported file and image inputs.
+
 ## Features
 
 - **AI-Powered Code Analysis:** Submit code and receive AI-generated explanations and analysis.
@@ -44,32 +52,32 @@ CodeScan-AI/
 ├── server.js
 ├── package.json
 ├── package-lock.json
-├── .env
 ├── .gitignore
+├── SETUP.md
 └── README.md
 ```
 
 ## Getting Started
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/CodeScan-AI-OpenRouter-Integration.git
+git clone https://github.com/AnshuRay-ar/CodeScan-AI-OpenRouter-Integration.git
 ```
 
-### 2. Open the project folder
+### 2. Open the Project Folder
 
 ```bash
 cd CodeScan-AI-OpenRouter-Integration
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 4. Configure environment variables
+### 4. Configure Environment Variables
 
 Create a `.env` file in the root directory.
 
@@ -78,28 +86,28 @@ PORT=3000
 
 AI_API_URL=https://openrouter.ai/api/v1/chat/completions
 
-AI_MODEL=inclusionai/ling-3.2-flash:free
+AI_MODEL=your_preferred_model
 
 OPENROUTER_API_KEY=your_openrouter_api_key
 
 ALLOW_IMAGES=true
 ```
 
-Replace `your_openrouter_api_key` with your own API key.
+Replace the placeholder values with your actual configuration.
 
 Get your API key from [OpenRouter](https://openrouter.ai/).
 
 **Important:** Never share your API key or upload your `.env` file to GitHub.
 
-### 5. Start the application
+### 5. Start the Application
 
 ```bash
 node server.js
 ```
 
-### 6. Open the application
+### 6. Open the Application
 
-Visit:
+Visit the following address in your browser:
 
 ```text
 http://localhost:3000
@@ -158,4 +166,4 @@ Developed as an AI-powered code analysis project using JavaScript, Node.js, Expr
 
 ---
 
-**CodeScan AI – Making code understanding smarter with AI.**
+**CodeScan AI – Making Code Understanding Smarter with AI.**
